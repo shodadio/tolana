@@ -28,14 +28,19 @@ jobs:
       GOOGLE_CLIENT_SECRET: ci-placeholder-secret
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
 
       - run: npm ci
+
+      # app/layout.tsx types its props with the generated `LayoutProps<"/">`,
+      # so route types must exist before tsc runs on a fresh checkout.
+      - name: Generate route types
+        run: npx next typegen
 
       - name: Typecheck
         run: npx tsc --noEmit
