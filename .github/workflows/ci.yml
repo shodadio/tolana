@@ -50,3 +50,37 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  # The migration spec drives a real browser against a production build, which
+  # the verify job never boots. It runs in its own job so a browser problem
+  # cannot mask the typecheck/lint/build signal.
+  e2e:
+    name: Local data migration (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      AUTH_SECRET: ci-only-placeholder-secret
+      AUTH_TRUST_HOST: "true"
+      NEXTAUTH_URL: http://127.0.0.1:3100
+      GOOGLE_CLIENT_ID: ci-placeholder.apps.googleusercontent.com
+      GOOGLE_CLIENT_SECRET: ci-placeholder-secret
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Playwright needs the browser plus the shared libraries it links against;
+      # --with-deps installs them on the runner image.
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      # playwright.config.ts builds the app and serves it on 127.0.0.1:3100.
+      - name: Run migration spec
+        run: npm run test:e2e
