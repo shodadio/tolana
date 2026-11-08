@@ -10,7 +10,6 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@googleapis/gmail": "^22.0.2",
     "clsx": "^2.1.1",
     "dexie": "^4.4.7",
     "dexie-react-hooks": "^4.4.0",
